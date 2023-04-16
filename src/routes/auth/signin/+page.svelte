@@ -13,12 +13,15 @@
 					class="absolute top-0 left-0 right-0 z-30 flex flex-wrap items-center px-4 py-2 mx-6 my-4 shadow-soft-2xl rounded-blur bg-white/80 backdrop-blur-2xl backdrop-saturate-200 lg:flex-nowrap lg:justify-start"
 				>
 					<div class="flex items-center justify-between w-full p-0 pl-6 mx-auto flex-wrap-inherit">
-						<a
-							class="py-2.375 text-sm mr-4 ml-4 whitespace-nowrap font-bold text-slate-700 lg:ml-0"
-							href="/"
-						>
-							Yours only CSR
-						</a>
+						<div class="flex gap-3" >
+							  <img src="/images/logo.svg" class="h-6 mr-3 sm:h-9" alt="Yours only CSR Logo" />
+								<a
+									class="py-2.375 text-sm mr-4 ml-4 whitespace-nowrap font-bold text-slate-700 lg:ml-0"
+									href="/"
+								>
+									Yours only CSR
+								</a>
+						</div>
 
 						<div
 							class="flex justify-between items-center flex-grow overflow-hidden transition-all duration-500 ease-soft lg-max:max-h-0 basis-full lg:flex lg:basis-auto"
