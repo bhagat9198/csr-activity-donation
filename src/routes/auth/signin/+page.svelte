@@ -1,48 +1,44 @@
-<script>
+<script lang="ts">
+	import AuthHeader from '$lib/common/authHeader.svelte';
 	import Footer from '$lib/common/footer.svelte';
 
+	let email: string, category: string, password: string;
+
+	function emailHandler(e: Event) {
+		const target = e.target as HTMLInputElement;
+		if (target) {
+			console.log(target.value);
+			email = target.value;
+		}
+	}
+
+	function passwordHandler(e: Event) {
+		const target = e.target as HTMLInputElement;
+		if (target) {
+			console.log(target.value);
+			email = target.value;
+		}
+	}
+
+	function categoryHandler(e: Event) {
+		const target = e.target as HTMLSelectElement;
+		if (target) {
+			console.log(target.value);
+			email = target.value;
+		}
+	}
+
+	function submitForm(event: any) {
+		// console.log('submitForm :: event :: ', event);
+		// console.log('submitForm :: event :: ', name, email, phone, category, password);
+	}
 </script>
+
 <div
 	class="m-0 font-sans antialiased font-normal bg-white text-start text-base leading-default text-slate-500"
 >
-	<div class="container sticky top-0 z-sticky">
-		<div class="flex flex-wrap -mx-3">
-			<div class="w-full max-w-full px-3 flex-0">
-				<!-- Navbar -->
-				<nav
-					class="absolute top-0 left-0 right-0 z-30 flex flex-wrap items-center px-4 py-2 mx-6 my-4 shadow-soft-2xl rounded-blur bg-white/80 backdrop-blur-2xl backdrop-saturate-200 lg:flex-nowrap lg:justify-start"
-				>
-					<div class="flex items-center justify-between w-full p-0 pl-6 mx-auto flex-wrap-inherit">
-						<div class="flex gap-3" >
-							  <img src="/images/logo.svg" class="h-6 mr-3 sm:h-9" alt="Yours only CSR Logo" />
-								<a
-									class="py-2.375 text-sm mr-4 ml-4 whitespace-nowrap font-bold text-slate-700 lg:ml-0"
-									href="/"
-								>
-									Yours only CSR
-								</a>
-						</div>
+	<AuthHeader />
 
-						<div
-							class="flex justify-between items-center flex-grow overflow-hidden transition-all duration-500 ease-soft lg-max:max-h-0 basis-full lg:flex lg:basis-auto"
-						>
-							<div />
-
-							<ul class="hidden pl-0 mb-0 list-none lg:block lg:flex-row">
-								<li>
-									<a
-										href="/auth/signup"
-										class="leading-pro hover:scale-102 hover:shadow-soft-xs active:opacity-85 ease-soft-in text-xs tracking-tight-soft shadow-soft-md bg-150 bg-x-25 bg-gradient-to-tl from-gray-900 to-slate-800 rounded-3.5xl mb-0 mr-1 inline-block cursor-pointer border-0 bg-transparent px-8 py-2 text-center align-middle font-bold uppercase text-white transition-all"
-										>Signup</a
-									>
-								</li>
-							</ul>
-						</div>
-					</div>
-				</nav>
-			</div>
-		</div>
-	</div>
 	<main class="mt-0 transition-all duration-200 ease-soft-in-out">
 		<section>
 			<div
@@ -65,7 +61,7 @@
 									<p class="mb-0">Enter your email and password to sign in</p>
 								</div>
 								<div class="flex-auto p-6">
-									<form>
+									<form on:submit={submitForm}>
 										<label class="mb-2 ml-1 font-bold text-xs text-slate-700">Email</label>
 										<div class="mb-4">
 											<input
@@ -74,6 +70,7 @@
 												placeholder="Email"
 												aria-label="Email"
 												aria-describedby="email-addon"
+												on:input={emailHandler}
 											/>
 										</div>
 										<label class="mb-2 ml-1 font-bold text-xs text-slate-700">Password</label>
@@ -84,11 +81,13 @@
 												placeholder="Password"
 												aria-label="Password"
 												aria-describedby="password-addon"
+												on:input={passwordHandler}
 											/>
 										</div>
 										<div class="mb-4">
 											<label class="mb-2 ml-1 font-bold text-xs text-slate-700">You are</label>
 											<select
+												on:input={categoryHandler}
 												class="text-sm focus:shadow-soft-primary-outline leading-5.6 ease-soft block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding py-2 px-3 font-normal text-gray-700 transition-all focus:border-fuchsia-300 focus:bg-white focus:text-gray-700 focus:outline-none focus:transition-shadow"
 											>
 												<option disabled selected value="">Select </option>
@@ -122,11 +121,11 @@
 						</div>
 						<div class="w-full max-w-full px-3 lg:flex-0 shrink-0 md:w-6/12">
 							<div
-								class="absolute top-0 hidden w-3/5 h-full -mr-32 overflow-hidden -skew-x-10 -right-40 rounded-bl-xl md:block"
+								class="absolute top-0 hidden w-3/5 h-full -mr-0 overflow-hidden -skew-x-10 -right-40 rounded-bl-xl md:block"
 							>
 								<div
 									class="absolute inset-x-0 top-0 z-0 h-full -ml-16 bg-cover skew-x-10"
-									style="background-image: url('/img/curved-images/curved6.jpg')"
+									style="background-image: url('/images/auth-cover.jpg')"
 								/>
 							</div>
 						</div>
