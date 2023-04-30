@@ -1,6 +1,18 @@
 <script lang="ts">
 	import AuthHeader from '$lib/common/authHeader.svelte';
 	import Footer from '$lib/common/footer.svelte';
+	import { onMount } from 'svelte';
+	import { toasts } from 'svelte-toasts';
+	import userStore from '$lib/store/user';
+	import { goto } from '$app/navigation';
+	import { readDocument, signinEmailPassword } from '$lib/utils/firebaseUtils';
+	import { USERS_COLL } from '$lib/utils/constants';
+
+	onMount(() => {
+		if ($userStore.authState) {
+			goto(`/${$userStore.category}/profile`);
+		}
+	});
 
 	let email: string, category: string, password: string;
 
@@ -20,17 +32,25 @@
 		}
 	}
 
-	function categoryHandler(e: Event) {
-		const target = e.target as HTMLSelectElement;
-		if (target) {
-			console.log(target.value);
-			email = target.value;
-		}
-	}
+	// function categoryHandler(e: Event) {
+	// 	const target = e.target as HTMLSelectElement;
+	// 	if (target) {
+	// 		console.log(target.value);
+	// 		email = target.value;
+	// 	}
+	// }
 
-	function submitForm(event: any) {
-		// console.log('submitForm :: event :: ', event);
-		// console.log('submitForm :: event :: ', name, email, phone, category, password);
+	async function submitForm(event: any) {
+		toasts.add({
+			description: 'Registering'
+		});
+
+		const res = await signinEmailPassword({ email, password });
+		if (!res.status) {
+			toasts.error({ description: res.message });
+			return;
+		}
+		toasts.success('loggedIn Successfully')
 	}
 </script>
 
@@ -84,18 +104,18 @@
 												on:input={passwordHandler}
 											/>
 										</div>
-										<div class="mb-4">
+										<!-- <div class="mb-4">
 											<label class="mb-2 ml-1 font-bold text-xs text-slate-700">You are</label>
 											<select
 												on:input={categoryHandler}
 												class="text-sm focus:shadow-soft-primary-outline leading-5.6 ease-soft block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding py-2 px-3 font-normal text-gray-700 transition-all focus:border-fuchsia-300 focus:bg-white focus:text-gray-700 focus:outline-none focus:transition-shadow"
 											>
 												<option disabled selected value="">Select </option>
-												<option value="">Corprate</option>
-												<option value="">NGO</option>
-												<option value="">Customer</option>
+												<option value="corprate">Corprate</option>
+												<option value="ngo">NGO</option>
+												<option value="user	">User	</option>
 											</select>
-										</div>
+										</div> -->
 										<div class="text-center">
 											<button
 												type="button"

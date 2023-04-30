@@ -2,10 +2,15 @@ import { writable } from "svelte/store";
 
 const userState = {
   authState: false,
-  category: 'ngo', // ngo user corprate
-  name: 'Alex',
-  email: 'a@a.com',
-  phone: '81654657897'
+  category: '', // ngo user corprate
+  name: '',
+  email: '',
+  phone: '',
+  uid: '',
+  activities: [''],
+  donations: [''],
+  activitiesAdded: [''],
+  donationsAdded: [''],
 }
 
 function createUserStore() {

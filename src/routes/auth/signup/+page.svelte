@@ -1,52 +1,96 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import AuthHeader from '$lib/common/authHeader.svelte';
 	import Footer from '$lib/common/footer.svelte';
+	import { createUpdateDocument, signinEmailPassword } from '$lib/utils/firebaseUtils';
+	import { onMount } from 'svelte';
+	import { toasts } from 'svelte-toasts';
+	import userStore from '$lib/store/user';
+	import { COLL_USERS } from '$lib/utils/constants';
+
+	onMount(() => {
+		if ($userStore.authState) {
+			goto(`/${$userStore.category}/profile`);
+		}
+	});
 
 	let name: string, email: string, phone: string, category: string, password: string;
 	async function submitForm(event: any) {
+		toasts.add({
+			description: 'Registering'
+		});
+
+		const res = await signinEmailPassword({ email, password });
+		if (!res.status) {
+			toasts.error({ description: res.message });
+			return;
+		}
+
+		const user = res.data?.user;
+		const userId = user?.uid;
+		toasts.add({
+			description: 'Almost Done...'
+		});
+		const createUserRes = await createUpdateDocument({
+			collName: COLL_USERS,
+			docId: userId!,
+			data: {
+				name,
+				email,
+				phone,
+				category,
+				activities: [],
+				donations: [],
+				activitiesAdded: [],
+				donationsAdded: []
+			}
+		});
+		if (!createUserRes.status) {
+			toasts.error({ description: res.message });
+			return;
+		}
+		goto(`/${category}/profile`);
 		// console.log('submitForm :: event :: ', event);
 		// console.log('submitForm :: event :: ', name, email, phone, category, password);
-
-
 	}
 
-	function nameHandler(e:Event) {
-		const target  = e.target as HTMLInputElement;
-		if(target) {
+	function nameHandler(e: Event) {
+		const target = e.target as HTMLInputElement;
+		if (target) {
 			console.log(target.value);
-			name = target.value
-		}
-	}
-	
-	function emailHandler(e:Event) {
-		const target  = e.target as HTMLInputElement;
-		if(target) {
-			console.log(target.value);
-			email = target.value
+			name = target.value;
 		}
 	}
 
-	function phoneHandler(e:Event) {
-		const target  = e.target as HTMLInputElement;
-		if(target) {
+	function emailHandler(e: Event) {
+		const target = e.target as HTMLInputElement;
+		if (target) {
 			console.log(target.value);
-			email = target.value
+			email = target.value;
 		}
 	}
 
-	function passwordHandler(e:Event) {
-		const target  = e.target as HTMLInputElement;
-		if(target) {
+	function phoneHandler(e: Event) {
+		const target = e.target as HTMLInputElement;
+		if (target) {
 			console.log(target.value);
-			email = target.value
+			phone = target.value;
 		}
 	}
 
-	function categoryHandler(e:Event) {
-		const target  = e.target as HTMLSelectElement;
-		if(target) {
+	function passwordHandler(e: Event) {
+		const target = e.target as HTMLInputElement;
+		if (target) {
 			console.log(target.value);
-			email = target.value
+			password = target.value;
+		}
+	}
+
+	function categoryHandler(e: Event) {
+		const target = e.target as HTMLSelectElement;
+		if (target) {
+			console.log(target.value);
+			category = target.value;
 		}
 	}
 </script>
@@ -119,9 +163,9 @@
 										class="text-sm focus:shadow-soft-primary-outline leading-5.6 ease-soft block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding py-2 px-3 font-normal text-gray-700 transition-all focus:border-fuchsia-300 focus:bg-white focus:text-gray-700 focus:outline-none focus:transition-shadow"
 									>
 										<option disabled selected value="">You are </option>
-										<option value="Corprate">Corprate</option>
-										<option value="NGO">NGO</option>
-										<option value="Customer">Customer</option>
+										<option value="corprate">Corprate</option>
+										<option value="ngo">NGO</option>
+										<option value="user">User</option>
 									</select>
 								</div>
 								<div class="text-center">

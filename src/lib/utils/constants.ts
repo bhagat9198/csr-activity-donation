@@ -1,0 +1,8 @@
+export const COLL_USERS = 'users'
+export const USERS_NGO = 'ngo'
+export const USERS_CORPORATE = 'corporate'
+export const COLL_USER_CORPORATE = 'corporate'
+export const COLL_NGO_ACTIVITIES = 'ngo-activities'
+export const COLL_CORPORATE_ACTIVITIES = 'corporate-activities'
+export const COLL_NGO_DONATIONS = 'ngo-donations'
+export const COLL_CORPORATE_DONATIONS = 'corporate-donations'
