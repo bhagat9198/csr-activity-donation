@@ -6,7 +6,7 @@
 	import { onAuthStateChanged } from 'firebase/auth';
 	import { auth, db } from '$lib/utils/firebaseConfig';
 	import userStore from '$lib/store/user';
-	import { readDocument } from '$lib/utils/firebaseUtils';
+	import { authLogout, readDocument } from '$lib/utils/firebaseUtils';
 
 	import { FlatToast, ToastContainer, toasts } from 'svelte-toasts';
 	import { goto } from '$app/navigation';
@@ -14,19 +14,21 @@
 	import { doc, onSnapshot } from 'firebase/firestore';
 
 	onMount(async() => {
-		console.log('onAuthStateChanged :: mounted :: ');
+		// console.log('onAuthStateChanged :: mounted :: ');
 		let _uid = ''
 		const authListner = await onAuthStateChanged(auth, async (user) => {
-			console.log('onAuthStateChanged :: user :: ', user);
+			// console.log('onAuthStateChanged :: user :: ', user);
 			if (user) {
 				const uid = user.uid;
 				_uid = uid
 				const res = await readDocument({ collName: COLL_USERS, docId: uid });
-				console.log('onAuthStateChanged :: res :: ', res);
+				// console.log('onAuthStateChanged :: res :: ', res);
 				if (!res.status) {
 					userStore.reset();
-					toasts.warning(res.message || 'Something went wrong');
-					return;
+					await authLogout()
+					toasts.warning('Please register yourself before sigining In');
+					goto('/auth/signup')
+					return ;
 				}
 				userStore.update((prevState) => ({
 					...prevState,
@@ -55,7 +57,7 @@
 		
 		if(_uid) {
 			userListner= onSnapshot(doc(db, COLL_USERS, _uid), (doc) => {
-				console.log('userListner data: ', doc.data());
+				// console.log('userListner data: ', doc.data());
 				const docData= doc.data();
 				userStore.update((prevState) => ({
 					...prevState,
@@ -71,13 +73,10 @@
 					donationsAdded: docData?.donationsAdded
 				}));
 			});
-
 		}
 	
-
 		return () => {
-			console.log('onAuthStateChanged :: un mounted :: ');
-
+			// console.log('onAuthStateChanged :: un mounted :: ');
 			authListner();
 		};
 	});

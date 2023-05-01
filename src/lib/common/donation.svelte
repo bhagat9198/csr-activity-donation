@@ -7,9 +7,9 @@
 	import PeopleAvtar from '$lib/common/peopleAvtar.svelte';
 	import ViewDonation from '$lib/common/viewDonation.svelte';
 	import {
-		COLL_CORPORATE_DONATIONS,
+	COLL_CORPRATE_DONATIONS,
 		COLL_NGO_DONATIONS,
-		USERS_CORPORATE,
+		USERS_CORPRATE,
 		USERS_NGO
 	} from '$lib/utils/constants';
 	import { db } from '$lib/utils/firebaseConfig';
@@ -17,6 +17,7 @@
 	import { onMount } from 'svelte';
 	import userStore from '$lib/store/user';
 	import EachCard from './eachCard.svelte';
+	import JoinDonation from './joinDonation.svelte';
 
 	let displayAddModal = {
 		status: false
@@ -66,14 +67,14 @@
 					}
 
 					let docData = doc.data();
-					console.log(
-						'snapshotListner1 :: docData :: ',
-						doc.id,
-						$userStore,
-						$userStore.donationsAdded.includes(doc.id)
-					);
+					// console.log(
+					// 	'snapshotListner1 :: docData :: ',
+					// 	doc.id,
+					// 	$userStore,
+					// 	$userStore.donationsAdded.includes(doc.id)
+					// );
 					if ($userStore.donationsAdded.includes(doc.id)) {
-						_userNgo.push({ ...docData, docId: doc.id, canView: true, hasjoined: false });
+						_userNgo.push({ ...docData, docId: doc.id, canView: true, hasjoined: false, coll: COLL_NGO_DONATIONS });
 						// console.log('snapshotListner1 :: allUserDonations :: ', allUserDonations);
 					} else {
 						if ($userStore.activities.includes(doc.id)) {
@@ -81,14 +82,14 @@
 								...docData,
 								docId: doc.id,
 								hasJoined: true,
-								canView: false
+								canView: false, coll: COLL_NGO_DONATIONS
 							});
 						} else {
 							_otherNgo.push({
 								...docData,
 								docId: doc.id,
 								hasJoined: false,
-								canView: false
+								canView: false, coll: COLL_NGO_DONATIONS
 							});
 						}
 					}
@@ -99,7 +100,7 @@
 		);
 
 		const snapshotListner2 = onSnapshot(
-			collection(db, COLL_CORPORATE_DONATIONS),
+			collection(db, COLL_CORPRATE_DONATIONS),
 			async (querySnapshot) => {
 				// console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
 
@@ -114,12 +115,12 @@
 					// console.log('snapshotListner1 :: docData :: ', doc.id, $userStore);
 
 					if ($userStore.donationsAdded.includes(doc.id)) {
-						_userCorp.push({ ...docData, docId: doc.id, canView: true, hasjoined: false });
+						_userCorp.push({ ...docData, docId: doc.id, canView: true, hasjoined: false, coll: COLL_CORPRATE_DONATIONS });
 					} else {
 						if ($userStore.activities.includes(doc.id)) {
-							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: true, canView: false });
+							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: true, canView: false, coll: COLL_CORPRATE_DONATIONS });
 						} else {
-							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: false, canView: false });
+							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: false, canView: false, coll: COLL_CORPRATE_DONATIONS });
 						}
 					}
 				});
@@ -152,7 +153,7 @@
 		<div class="w-full px-6 mx-auto">
 			<div class="flex-none w-full max-w-full px-3 mt-6">
 				<!-- activities to view -->
-				{#if $userStore.category === USERS_CORPORATE || $userStore.category === USERS_NGO}
+				{#if $userStore.category === USERS_CORPRATE || $userStore.category === USERS_NGO}
 					<p
 						class="my-2 leading-pro hover:scale-102 hover:shadow-soft-xs active:opacity-85 ease-soft-in text-xs tracking-tight-soft shadow-soft-md bg-150 bg-x-25 bg-gradient-to-tl from-red-900 to-red-800 rounded-3.5xl mb-0 mr-1 inline-block cursor-pointer border-0 bg-transparent px-8 py-2 text-center align-middle font-bold uppercase text-white transition-all"
 					>
@@ -246,7 +247,12 @@
 	<AddDonation {displayAddModal} {updateAddModalState} />
 {/if}
 
-<!-- join -->
+<!-- view -->
 {#if displayViewModal.status}
 	<ViewDonation {displayViewModal} donationDetails={selectedDonation} {updateViewModalState} />
+{/if}
+
+<!-- join -->
+{#if displayJoinModal.status}
+	<JoinDonation {displayJoinModal} selectedDonations={selectedDonation} {updateJoinModalState} />
 {/if}

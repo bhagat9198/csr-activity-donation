@@ -2,10 +2,10 @@
 	import { toasts } from 'svelte-toasts';
 	import userStore from '$lib/store/user';
 	import {
-		COLL_CORPORATE_DONATIONS,
+	COLL_CORPRATE_DONATIONS,
 		COLL_NGO_DONATIONS,
 		COLL_USERS,
-		USERS_CORPORATE,
+		USERS_CORPRATE,
 		USERS_NGO
 	} from '$lib/utils/constants';
 	import { createUpdateDocument } from '$lib/utils/firebaseUtils';
@@ -57,8 +57,8 @@
 		if ($userStore.category === USERS_NGO) {
 			collName = COLL_NGO_DONATIONS;
 		}
-		if ($userStore.category === USERS_CORPORATE) {
-			collName = COLL_CORPORATE_DONATIONS;
+		if ($userStore.category === USERS_CORPRATE) {
+			collName = COLL_CORPRATE_DONATIONS;
 		}
 		const addDonationRes = await createUpdateDocument({ collName, data });
 		if (!addDonationRes.status) {
@@ -90,11 +90,11 @@
 </script>
 
 <div
-	class="absolute top-0 left-0 w-screen h-screen opacity-80 bg-gray-500 m-0 p-0"
+	class="fixed top-0 left-0 w-screen h-screen opacity-80 bg-gray-500 m-0 p-0"
 	style="z-index: 999999;"
 />
 <div
-	class="absolute top-0 left-0 w-screen h-screen flex justify-center items-center"
+	class="fixed top-0 left-0 w-screen h-screen flex justify-center items-center"
 	style="z-index: 999999;"
 >
 	<div class="container">

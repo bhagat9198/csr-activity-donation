@@ -5,15 +5,15 @@
 </script>
 
 <div
-	class="absolute top-0 left-0 w-screen h-screen opacity-80 bg-gray-500 m-0 p-0"
+	class="fixed top-0 left-0 w-screen h-screen opacity-80 bg-gray-500 m-0 p-0"
 	style="z-index: 999999;"
 />
 <div
-	class="absolute top-0 left-0 w-screen h-screen flex justify-center items-center"
+	class="fixed top-0 left-0 w-screen h-screen flex justify-center items-center"
 	style="z-index: 999999;"
 >
 	<div class="container flex gap-2 bg-white p-4 rounded-5">
-		<div class="flex flex-wrap mx-10">
+		<div class="flex flex-wrap mx-10 w-full">
 			<div class=" w-full flex justify-between mb-5">
 				<h5 class="font-bold pt-3">{donationDetails.name}</h5>
 				<div class="px-3">
@@ -36,7 +36,7 @@
 							<p class="text-center text-base font-bold">Hold On...No one has joined yet!!</p>
 						{:else}
 							{#each donationDetails.usersDonated as eachUserDonated}
-								<tr class="mx-5">
+								<tr class="mx-5 w-40">
 									<td
 										class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent"
 									>
@@ -59,6 +59,7 @@
 										</div>
 									</td>
 								</tr>
+								
 							{/each}
 						{/if}
 					</div>

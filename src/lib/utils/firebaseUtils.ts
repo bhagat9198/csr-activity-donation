@@ -1,6 +1,6 @@
 import { collection, addDoc, doc, getDocs, getDoc, setDoc, DocumentReference, onSnapshot } from 'firebase/firestore'
 import { db, auth } from './firebaseConfig'
-import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
 export const createUpdateDocument = async (args: {
 	data: {};
@@ -130,8 +130,8 @@ export const updateDocumnet = async (args: {data: string, collName: string, docI
 	}
 };
 
-export const signinEmailPassword = async(args: {email: string, password: string}) => {
-	// console.log('signinEmailPassword :: args :: ', args);
+export const createWithEmailPassword = async(args: {email: string, password: string}) => {
+	// console.log('createWithEmailPassword :: args :: ', args);
 	
 	const {email, password} = args;
 	try {
@@ -142,7 +142,27 @@ export const signinEmailPassword = async(args: {email: string, password: string}
 			message: 'success'
 		}
 	} catch(error: any) {
-		console.log('signinEmailPassword :: error :: ', error);
+		console.log('createWithEmailPassword :: error :: ', error);
+		return {
+			status: false,
+			message: error?.message || 'something went wrong'
+		}
+	}
+}
+
+export const signinWithEmailPassword = async(args: {email: string, password: string}) => {
+	// console.log('signinWithEmailPassword :: args :: ', args);
+	
+	const {email, password} = args;
+	try {
+		const res = await signInWithEmailAndPassword(auth, email, password)
+		return {
+			status: true,
+			data: res,
+			message: 'success'
+		}
+	} catch(error: any) {
+		console.log('signinWithEmailPassword :: error :: ', error);
 		return {
 			status: false,
 			message: error?.message || 'something went wrong'

@@ -3,10 +3,10 @@
 	import { toasts } from 'svelte-toasts';
 	import userStore from '$lib/store/user';
 	import {
-		COLL_CORPORATE_ACTIVITIES,
+	COLL_CORPRATE_ACTIVITIES,
 		COLL_NGO_ACTIVITIES,
 		COLL_USERS,
-		USERS_CORPORATE,
+		USERS_CORPRATE,
 		USERS_NGO
 	} from '$lib/utils/constants';
 
@@ -105,8 +105,8 @@
 		if ($userStore.category === USERS_NGO) {
 			collName = COLL_NGO_ACTIVITIES;
 		}
-		if ($userStore.category === USERS_CORPORATE) {
-			collName = COLL_CORPORATE_ACTIVITIES;
+		if ($userStore.category === USERS_CORPRATE) {
+			collName = COLL_CORPRATE_ACTIVITIES;
 		}
 		const addActivityRes = await createUpdateDocument({ collName, data });
 		if (!addActivityRes.status) {

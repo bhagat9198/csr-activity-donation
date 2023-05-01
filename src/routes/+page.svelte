@@ -1,7 +1,7 @@
 <script>
 	import Footer from '$lib/common/footer.svelte';
 	import { add } from '$lib/utils/firebaseUtils';
-    console.log(add())
+
 </script>
 
 <header class="fixed w-full">

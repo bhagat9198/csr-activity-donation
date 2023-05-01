@@ -1,14 +1,26 @@
 import { writable } from "svelte/store";
 
-const userState = {
+
+const userState : {
+  authState: boolean,
+  category: string, // ngo user corprate
+  name: string,
+  email: string,
+  phone: string,
+  uid: string,
+  activities: any[],
+  donations: any[],
+  activitiesAdded: string[],
+  donationsAdded: string[],
+}= {
   authState: false,
   category: '', // ngo user corprate
   name: '',
   email: '',
   phone: '',
   uid: '',
-  activities: [''],
-  donations: [''],
+  activities: [],
+  donations: [],
   activitiesAdded: [''],
   donationsAdded: [''],
 }

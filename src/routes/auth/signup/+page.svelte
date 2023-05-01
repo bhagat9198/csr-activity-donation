@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import AuthHeader from '$lib/common/authHeader.svelte';
 	import Footer from '$lib/common/footer.svelte';
-	import { createUpdateDocument, signinEmailPassword } from '$lib/utils/firebaseUtils';
+	import { createUpdateDocument, createWithEmailPassword } from '$lib/utils/firebaseUtils';
 	import { onMount } from 'svelte';
 	import { toasts } from 'svelte-toasts';
 	import userStore from '$lib/store/user';
@@ -20,7 +20,7 @@
 			description: 'Registering'
 		});
 
-		const res = await signinEmailPassword({ email, password });
+		const res = await createWithEmailPassword({ email, password });
 		if (!res.status) {
 			toasts.error({ description: res.message });
 			return;
@@ -57,7 +57,7 @@
 	function nameHandler(e: Event) {
 		const target = e.target as HTMLInputElement;
 		if (target) {
-			console.log(target.value);
+			// console.log(target.value);
 			name = target.value;
 		}
 	}
@@ -65,7 +65,7 @@
 	function emailHandler(e: Event) {
 		const target = e.target as HTMLInputElement;
 		if (target) {
-			console.log(target.value);
+			// console.log(target.value);
 			email = target.value;
 		}
 	}
@@ -73,7 +73,7 @@
 	function phoneHandler(e: Event) {
 		const target = e.target as HTMLInputElement;
 		if (target) {
-			console.log(target.value);
+			// console.log(target.value);
 			phone = target.value;
 		}
 	}
@@ -81,7 +81,7 @@
 	function passwordHandler(e: Event) {
 		const target = e.target as HTMLInputElement;
 		if (target) {
-			console.log(target.value);
+			// console.log(target.value);
 			password = target.value;
 		}
 	}
@@ -89,7 +89,7 @@
 	function categoryHandler(e: Event) {
 		const target = e.target as HTMLSelectElement;
 		if (target) {
-			console.log(target.value);
+			// console.log(target.value);
 			category = target.value;
 		}
 	}

@@ -11,13 +11,14 @@
 	import { onMount } from 'svelte';
 	import userStore from '$lib/store/user';
 	import {
-		COLL_CORPORATE_ACTIVITIES,
+	COLL_CORPRATE_ACTIVITIES,
 		COLL_NGO_ACTIVITIES,
-		USERS_CORPORATE,
+		USERS_CORPRATE,
 		USERS_NGO
 	} from '$lib/utils/constants';
 	import EachCard from './eachCard.svelte';
 	import { stringify } from 'postcss';
+	import JoinActivity from './joinActivity.svelte';
 
 	let displayAddModal = {
 		status: false
@@ -45,7 +46,7 @@
 				_userNgo = [];
 				_otherNgo = [];
 				await new Promise((r) => setTimeout(r, 3000));
-				console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
+				// console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
 
 				await querySnapshot.forEach((doc) => {
 					if (!doc.exists()) {
@@ -60,7 +61,7 @@
 					// 	$userStore.activitiesAdded.includes(doc.id)
 					// );
 					if ($userStore.activitiesAdded.includes(doc.id)) {
-						_userNgo.push({ ...docData, docId: doc.id, canView: true, hasjoined: false });
+						_userNgo.push({ ...docData, docId: doc.id, canView: true, hasjoined: false, coll: COLL_NGO_ACTIVITIES });
 						// console.log('snapshotListner1 :: allUserDonations :: ', allUserDonations);
 					} else {
 						if ($userStore.activities.includes(doc.id)) {
@@ -68,25 +69,25 @@
 								...docData,
 								docId: doc.id,
 								hasJoined: true,
-								canView: false
+								canView: false, coll: COLL_NGO_ACTIVITIES
 							});
 						} else {
 							_otherNgo.push({
 								...docData,
 								docId: doc.id,
 								hasJoined: false,
-								canView: false
+								canView: false, coll: COLL_NGO_ACTIVITIES
 							});
 						}
 					}
 				});
-						allOtherActivities = [..._otherNgo, ..._otherCorp];
-		allUserActivities = [..._userNgo, ..._userCorp];
+				allOtherActivities = [..._otherNgo, ..._otherCorp];
+				allUserActivities = [..._userNgo, ..._userCorp];
 			}
 		);
 
 		const snapshotListner2 = onSnapshot(
-			collection(db, COLL_CORPORATE_ACTIVITIES),
+			collection(db, COLL_CORPRATE_ACTIVITIES),
 			async (querySnapshot) => {
 				// console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
 
@@ -101,23 +102,21 @@
 					// console.log('snapshotListner1 :: docData :: ', doc.id, $userStore);
 
 					if ($userStore.activitiesAdded.includes(doc.id)) {
-						_userCorp.push({ ...docData, docId: doc.id, canView: true, hasjoined: false });
+						_userCorp.push({ ...docData, docId: doc.id, canView: true, hasjoined: false, coll: COLL_CORPRATE_ACTIVITIES });
 					} else {
 						if ($userStore.activities.includes(doc.id)) {
-							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: true, canView: false });
+							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: true, canView: false, coll: COLL_CORPRATE_ACTIVITIES });
 						} else {
-							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: false, canView: false });
+							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: false, canView: false, coll: COLL_CORPRATE_ACTIVITIES });
 						}
 					}
 				});
-						allOtherActivities = [..._otherNgo, ..._otherCorp];
-		allUserActivities = [..._userNgo, ..._userCorp];
+				allOtherActivities = [..._otherNgo, ..._otherCorp];
+				allUserActivities = [..._userNgo, ..._userCorp];
 			}
 		);
 
 		console.log(_otherNgo, _otherCorp, _userNgo, _userCorp);
-
-
 
 		return () => {
 			snapshotListner1();
@@ -139,8 +138,8 @@
 	}
 
 	// $: console.log(allOtherActivities);
-	// $: console.log(allUserActivities);
-	// $: console.log($userStore);
+	$: console.log(displayJoinModal);
+	$: console.log('userStore :: ',$userStore);
 </script>
 
 <Header />
@@ -150,13 +149,13 @@
 	<Navigation />
 
 	<div
-		class="ease-soft-in-out xl:ml-68.5 relative h-full max-h-screen bg-gray-50 transition-all duration-200"
+		class="ease-soft-in-out xl:ml-68.5 relative h-full bg-gray-50 transition-all duration-200"
 	>
 		<PageHero heading="All Activities" />
 		<div class="w-full px-6 mx-auto">
 			<div class="flex-none w-full max-w-full px-3 mt-6">
 				<!-- activities to view -->
-				{#if $userStore.category === USERS_CORPORATE || $userStore.category === USERS_NGO}
+				{#if $userStore.category === USERS_CORPRATE || $userStore.category === USERS_NGO}
 					<p
 						class="my-2 leading-pro hover:scale-102 hover:shadow-soft-xs active:opacity-85 ease-soft-in text-xs tracking-tight-soft shadow-soft-md bg-150 bg-x-25 bg-gradient-to-tl from-red-900 to-red-800 rounded-3.5xl mb-0 mr-1 inline-block cursor-pointer border-0 bg-transparent px-8 py-2 text-center align-middle font-bold uppercase text-white transition-all"
 					>
@@ -247,4 +246,9 @@
 <!-- View -->
 {#if displayViewModal.status}
 	<ViewActivity {displayViewModal} {updateViewModalState} activityDetails={selectedActivity} />
+{/if}
+
+<!-- join -->
+{#if displayJoinModal.status}
+	<JoinActivity {displayJoinModal} {updateJoinModalState} {selectedActivity} />
 {/if}
