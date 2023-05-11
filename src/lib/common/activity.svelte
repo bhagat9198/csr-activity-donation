@@ -7,18 +7,20 @@
 	import PeopleAvtar from '$lib/common/peopleAvtar.svelte';
 	import ViewActivity from '$lib/common/viewActivity.svelte';
 	import { db } from '$lib/utils/firebaseConfig';
-	import { collection, onSnapshot } from 'firebase/firestore';
+	import { collection, doc, onSnapshot } from 'firebase/firestore';
 	import { onMount } from 'svelte';
 	import userStore from '$lib/store/user';
 	import {
-	COLL_CORPRATE_ACTIVITIES,
+		COLL_CORPRATE_ACTIVITIES,
 		COLL_NGO_ACTIVITIES,
+		COLL_USERS,
 		USERS_CORPRATE,
 		USERS_NGO
 	} from '$lib/utils/constants';
 	import EachCard from './eachCard.svelte';
 	import { stringify } from 'postcss';
 	import JoinActivity from './joinActivity.svelte';
+	import { areObjectsEqual } from '$lib/utils/firebaseUtils';
 
 	let displayAddModal = {
 		status: false
@@ -34,95 +36,159 @@
 	let allOtherActivities: any[] = [];
 
 	let selectedActivity: any = null;
+	let _userNgo: any[] = [];
+	let _userCorp: any[] = [];
+	let _otherNgo: any[] = [];
+	let _otherCorp: any[] = [];
+	const snapshotListner1 = () => {
+		onSnapshot(collection(db, COLL_NGO_ACTIVITIES), async (querySnapshot) => {
+			_userNgo = [];
+			_otherNgo = [];
+			// await new Promise((r) => setTimeout(r, 3000));
+			// console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
 
-	onMount(async () => {
-		let _userNgo: any[] = [];
-		let _userCorp: any[] = [];
-		let _otherNgo: any[] = [];
-		let _otherCorp: any[] = [];
-		const snapshotListner1 = onSnapshot(
-			collection(db, COLL_NGO_ACTIVITIES),
-			async (querySnapshot) => {
-				_userNgo = [];
-				_otherNgo = [];
-				await new Promise((r) => setTimeout(r, 3000));
-				// console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
+			await querySnapshot.forEach((doc) => {
+				if (!doc.exists()) {
+					return;
+				}
 
-				await querySnapshot.forEach((doc) => {
-					if (!doc.exists()) {
-						return;
-					}
-
-					let docData = doc.data();
-					// console.log(
-					// 	'snapshotListner1 :: docData :: ',
-					// 	doc.id,
-					// 	$userStore,
-					// 	$userStore.activitiesAdded.includes(doc.id)
-					// );
-					if ($userStore.activitiesAdded.includes(doc.id)) {
-						_userNgo.push({ ...docData, docId: doc.id, canView: true, hasjoined: false, coll: COLL_NGO_ACTIVITIES });
-						// console.log('snapshotListner1 :: allUserDonations :: ', allUserDonations);
+				let docData = doc.data();
+				// console.log(
+				// 	'snapshotListner1 :: docData :: ',
+				// 	doc.id,
+				// 	$userStore,
+				// 	$userStore.activitiesAdded.includes(doc.id)
+				// );
+				if ($userStore.activitiesAdded.includes(doc.id)) {
+					_userNgo.push({
+						...docData,
+						docId: doc.id,
+						canView: true,
+						hasjoined: false,
+						coll: COLL_NGO_ACTIVITIES
+					});
+					// console.log('snapshotListner1 :: allUserDonations :: ', allUserDonations);
+				} else {
+					if ($userStore.activities.includes(doc.id)) {
+						_otherNgo.push({
+							...docData,
+							docId: doc.id,
+							hasJoined: true,
+							canView: false,
+							coll: COLL_NGO_ACTIVITIES
+						});
 					} else {
-						if ($userStore.activities.includes(doc.id)) {
-							_otherNgo.push({
-								...docData,
-								docId: doc.id,
-								hasJoined: true,
-								canView: false, coll: COLL_NGO_ACTIVITIES
-							});
-						} else {
-							_otherNgo.push({
-								...docData,
-								docId: doc.id,
-								hasJoined: false,
-								canView: false, coll: COLL_NGO_ACTIVITIES
-							});
-						}
+						_otherNgo.push({
+							...docData,
+							docId: doc.id,
+							hasJoined: false,
+							canView: false,
+							coll: COLL_NGO_ACTIVITIES
+						});
 					}
-				});
-				allOtherActivities = [..._otherNgo, ..._otherCorp];
-				allUserActivities = [..._userNgo, ..._userCorp];
-			}
-		);
+				}
+			});
+			allOtherActivities = [..._otherNgo, ..._otherCorp];
+			allUserActivities = [..._userNgo, ..._userCorp];
+		});
+	};
 
-		const snapshotListner2 = onSnapshot(
-			collection(db, COLL_CORPRATE_ACTIVITIES),
-			async (querySnapshot) => {
-				// console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
+	const snapshotListner2 = () => {
+		onSnapshot(collection(db, COLL_CORPRATE_ACTIVITIES), async (querySnapshot) => {
+			// console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
 
-				await new Promise((r) => setTimeout(r, 3000));
-				_userCorp = [];
-				_otherCorp = [];
-				await querySnapshot.forEach((doc) => {
-					if (!doc.exists()) {
-						return;
-					}
-					let docData = doc.data();
-					// console.log('snapshotListner1 :: docData :: ', doc.id, $userStore);
+			// await new Promise((r) => setTimeout(r, 3000));
+			_userCorp = [];
+			_otherCorp = [];
+			await querySnapshot.forEach((doc) => {
+				if (!doc.exists()) {
+					return;
+				}
+				let docData = doc.data();
+				// console.log('snapshotListner1 :: docData :: ', doc.id, $userStore);
 
-					if ($userStore.activitiesAdded.includes(doc.id)) {
-						_userCorp.push({ ...docData, docId: doc.id, canView: true, hasjoined: false, coll: COLL_CORPRATE_ACTIVITIES });
+				if ($userStore.activitiesAdded.includes(doc.id)) {
+					_userCorp.push({
+						...docData,
+						docId: doc.id,
+						canView: true,
+						hasjoined: false,
+						coll: COLL_CORPRATE_ACTIVITIES
+					});
+				} else {
+					if ($userStore.activities.includes(doc.id)) {
+						_otherCorp.push({
+							...docData,
+							docId: doc.id,
+							hasJoined: true,
+							canView: false,
+							coll: COLL_CORPRATE_ACTIVITIES
+						});
 					} else {
-						if ($userStore.activities.includes(doc.id)) {
-							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: true, canView: false, coll: COLL_CORPRATE_ACTIVITIES });
-						} else {
-							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: false, canView: false, coll: COLL_CORPRATE_ACTIVITIES });
-						}
+						_otherCorp.push({
+							...docData,
+							docId: doc.id,
+							hasJoined: false,
+							canView: false,
+							coll: COLL_CORPRATE_ACTIVITIES
+						});
 					}
-				});
-				allOtherActivities = [..._otherNgo, ..._otherCorp];
-				allUserActivities = [..._userNgo, ..._userCorp];
+				}
+			});
+			allOtherActivities = [..._otherNgo, ..._otherCorp];
+			allUserActivities = [..._userNgo, ..._userCorp];
+		});
+	};
+
+	$: {
+		console.log('$userStore :: ', $userStore);
+		if($userStore.uid) {
+		const userListner = onSnapshot(doc(db, COLL_USERS, $userStore.uid), (doc) => {
+			console.log('userListner data: uid :: ', doc.data(), doc.id);
+			const docData = doc.data();
+			let _data = {
+				authState: true,
+				category: docData?.category,
+				email: docData?.email,
+				name: docData?.name,
+				phone: docData?.phone,
+				uid: doc?.id,
+				activities: docData?.activities,
+				donations: docData?.donations,
+				activitiesAdded: docData?.activitiesAdded,
+				donationsAdded: docData?.donationsAdded
+			};
+			console.log($userStore, _data, areObjectsEqual($userStore, _data));
+
+			if ($userStore.category !== 'user' && !areObjectsEqual($userStore, _data)) {
+				userStore.update((prevState) => ({
+					...prevState,
+					authState: true,
+					category: docData?.category,
+					email: docData?.email,
+					name: docData?.name,
+					phone: docData?.phone,
+					uid: doc?.id,
+					activities: docData?.activities,
+					donations: docData?.donations,
+					activitiesAdded: docData?.activitiesAdded,
+					donationsAdded: docData?.donationsAdded
+				}));
+
+				setTimeout(() => {
+					snapshotListner1();
+					snapshotListner2();
+				}, 500);
 			}
-		);
+		});
+	}
+	}
 
-		console.log(_otherNgo, _otherCorp, _userNgo, _userCorp);
-
-		return () => {
-			snapshotListner1();
-			snapshotListner2();
-		};
+	onMount(() => {
+		snapshotListner1();
+		snapshotListner2();
 	});
+
 	function updateAddModalState(val: boolean) {
 		displayAddModal.status = val;
 	}
@@ -139,7 +205,7 @@
 
 	// $: console.log(allOtherActivities);
 	$: console.log(displayJoinModal);
-	$: console.log('userStore :: ',$userStore);
+	$: console.log('userStore :: ', $userStore);
 </script>
 
 <Header />
@@ -148,9 +214,7 @@
 >
 	<Navigation />
 
-	<div
-		class="ease-soft-in-out xl:ml-68.5 relative h-full bg-gray-50 transition-all duration-200"
-	>
+	<div class="ease-soft-in-out xl:ml-68.5 relative h-full bg-gray-50 transition-all duration-200">
 		<PageHero heading="All Activities" />
 		<div class="w-full px-6 mx-auto">
 			<div class="flex-none w-full max-w-full px-3 mt-6">
@@ -183,7 +247,7 @@
 								</div>
 
 								{#each allUserActivities as eachUserActivity, index}
-									<div class="w-full max-w-full px-3 mb-6 md:w-6/12 md:flex-none xl:mb-0 xl:w-3/12">
+									<div class="my-5 w-full max-w-full px-3 mb-6 md:w-6/12 md:flex-none xl:mb-0 xl:w-3/12">
 										<EachCard
 											counter={index + 1}
 											{updateViewModalState}
@@ -214,7 +278,7 @@
 					<div class="flex-auto p-4">
 						<div class="flex flex-wrap -mx-3">
 							{#each allOtherActivities as eachOtherActivity, index}
-								<div class="w-full max-w-full px-3 mb-6 md:w-6/12 md:flex-none xl:mb-0 xl:w-3/12">
+								<div class="my-5 w-full max-w-full px-3 mb-6 md:w-6/12 md:flex-none xl:mb-0 xl:w-3/12">
 									<EachCard
 										counter={index + 1}
 										{updateViewModalState}

@@ -89,7 +89,8 @@
 		toasts.add({
 			description: 'Adding your actvity'
 		});
-
+		console.log('$userStore :: ',$userStore);
+		
 		const data = {
 			name,
 			location,

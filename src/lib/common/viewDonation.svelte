@@ -36,7 +36,7 @@
 							<p class="text-center text-base font-bold">Hold On...No one has joined yet!!</p>
 						{:else}
 							{#each donationDetails.usersDonated as eachUserDonated}
-								<tr class="mx-5 w-40">
+								<tr class="mx-5 w-80">
 									<td
 										class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent"
 									>
@@ -54,7 +54,7 @@
 									>
 										<div class="flex px-2 py-1">
 											<div class="flex flex-col justify-center">
-												<h6 class="mb-0 leading-normal text-sm">$ {eachUserDonated.amount}</h6>
+												<h6 class="mb-0 leading-normal text-sm">₹ {eachUserDonated.amount}</h6>
 											</div>
 										</div>
 									</td>

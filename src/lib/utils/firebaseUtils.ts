@@ -8,7 +8,7 @@ export const createUpdateDocument = async (args: {
 	docId?: string;
 }) => {
 	const { collName, data, docId } = args;
-	// console.log('createUpdateDocument :: data, collName, docId', data, collName, docId);
+	console.log('createUpdateDocument :: data, collName, docId', data, collName, docId);
 	if (!data || !collName) return { status: false, message: 'Invalid data' };
 	try {
 		let docRef:any;
@@ -205,5 +205,39 @@ export const authLogout = async() => {
 // 	});
 
 // }
+
+export function areObjectsEqual(a, b) {
+	// Get the keys of the objects
+	const aKeys = Object.keys(a);
+	const bKeys = Object.keys(b);
+
+	// If the number of keys is different, the objects are not equal
+	if (aKeys.length !== bKeys.length) {
+		return false;
+	}
+
+	// Iterate over the keys
+	for (const key of aKeys) {
+		// If the key doesn't exist in the other object, the objects are not equal
+		if (!(key in b)) {
+			return false;
+		}
+
+		// If the values of the keys are objects, recursively check them
+		if (typeof a[key] === 'object' && typeof b[key] === 'object') {
+			if (!areObjectsEqual(a[key], b[key])) {
+				return false;
+			}
+		} else {
+			// If the values of the keys are not objects, compare them
+			if (a[key] !== b[key]) {
+				return false;
+			}
+		}
+	}
+
+	// If all keys and values are equal, the objects are equal
+	return true;
+}
 
 export const add = () => 5

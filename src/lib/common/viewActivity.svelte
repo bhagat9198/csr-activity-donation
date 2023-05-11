@@ -56,7 +56,7 @@
 							<p class="text-center text-base font-bold">Hold On...No one has joined yet!!</p>
 						{:else}
 							{#each activityDetails.usersJoined as eachUserjoined}
-								<div class="w-32 p-0 overflow-x-auto flex flex-wrap h-20 mx-5">
+								<div class="w-80 p-0 overflow-x-auto flex flex-wrap h-20 mx-5">
 									<tr>
 										<td
 											class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent"

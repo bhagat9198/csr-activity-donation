@@ -7,17 +7,19 @@
 	import PeopleAvtar from '$lib/common/peopleAvtar.svelte';
 	import ViewDonation from '$lib/common/viewDonation.svelte';
 	import {
-	COLL_CORPRATE_DONATIONS,
+		COLL_CORPRATE_DONATIONS,
 		COLL_NGO_DONATIONS,
+		COLL_USERS,
 		USERS_CORPRATE,
 		USERS_NGO
 	} from '$lib/utils/constants';
 	import { db } from '$lib/utils/firebaseConfig';
-	import { collection, onSnapshot } from 'firebase/firestore';
+	import { collection, doc, onSnapshot } from 'firebase/firestore';
 	import { onMount } from 'svelte';
 	import userStore from '$lib/store/user';
 	import EachCard from './eachCard.svelte';
 	import JoinDonation from './joinDonation.svelte';
+	import { areObjectsEqual } from '$lib/utils/firebaseUtils';
 
 	let displayAddModal = {
 		status: false
@@ -47,94 +49,164 @@
 	let allOtherDonations: any[] = [];
 
 	let selectedDonation: any = null;
+	let _userNgo: any[] = [];
+	let _userCorp: any[] = [];
+	let _otherNgo: any[] = [];
+	let _otherCorp: any[] = [];
 
-	onMount(async () => {
-		let _userNgo: any[] = [];
-		let _userCorp: any[] = [];
-		let _otherNgo: any[] = [];
-		let _otherCorp: any[] = [];
-		const snapshotListner1 = onSnapshot(
-			collection(db, COLL_NGO_DONATIONS),
-			async (querySnapshot) => {
-				_userNgo = [];
-				_otherNgo = [];
-				await new Promise((r) => setTimeout(r, 3000));
-				console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
+	const snapshotListner1 = () => {
+		onSnapshot(collection(db, COLL_NGO_DONATIONS), async (querySnapshot) => {
+			_userNgo = [];
+			_otherNgo = [];
+			// await new Promise((r) => setTimeout(r, 3000));
+			console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
 
-				await querySnapshot.forEach((doc) => {
-					if (!doc.exists()) {
-						return;
-					}
+			await querySnapshot.forEach((doc) => {
+				if (!doc.exists()) {
+					return;
+				}
 
-					let docData = doc.data();
-					// console.log(
-					// 	'snapshotListner1 :: docData :: ',
-					// 	doc.id,
-					// 	$userStore,
-					// 	$userStore.donationsAdded.includes(doc.id)
-					// );
-					if ($userStore.donationsAdded.includes(doc.id)) {
-						_userNgo.push({ ...docData, docId: doc.id, canView: true, hasjoined: false, coll: COLL_NGO_DONATIONS });
-						// console.log('snapshotListner1 :: allUserDonations :: ', allUserDonations);
+				let docData = doc.data();
+				console.log(
+					'snapshotListner1 :: docData :: ',
+					doc.id,
+					$userStore,
+					$userStore.donationsAdded.includes(doc.id)
+				);
+				if ($userStore.donationsAdded.includes(doc.id)) {
+					_userNgo.push({
+						...docData,
+						docId: doc.id,
+						canView: true,
+						hasjoined: false,
+						coll: COLL_NGO_DONATIONS
+					});
+					// console.log('snapshotListner1 :: allUserDonations :: ', allUserDonations);
+				} else {
+					if ($userStore.activities.includes(doc.id)) {
+						_otherNgo.push({
+							...docData,
+							docId: doc.id,
+							hasJoined: true,
+							canView: false,
+							coll: COLL_NGO_DONATIONS
+						});
 					} else {
-						if ($userStore.activities.includes(doc.id)) {
-							_otherNgo.push({
-								...docData,
-								docId: doc.id,
-								hasJoined: true,
-								canView: false, coll: COLL_NGO_DONATIONS
-							});
-						} else {
-							_otherNgo.push({
-								...docData,
-								docId: doc.id,
-								hasJoined: false,
-								canView: false, coll: COLL_NGO_DONATIONS
-							});
-						}
+						_otherNgo.push({
+							...docData,
+							docId: doc.id,
+							hasJoined: false,
+							canView: false,
+							coll: COLL_NGO_DONATIONS
+						});
 					}
-				});
-				allOtherDonations = [..._otherNgo, ..._otherCorp];
-				allUserDonations = [..._userNgo, ..._userCorp];
-			}
-		);
+				}
+			});
+			allOtherDonations = [..._otherNgo, ..._otherCorp];
+			allUserDonations = [..._userNgo, ..._userCorp];
+		});
+	};
 
-		const snapshotListner2 = onSnapshot(
-			collection(db, COLL_CORPRATE_DONATIONS),
-			async (querySnapshot) => {
-				// console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
+	const snapshotListner2 = () => {
+		onSnapshot(collection(db, COLL_CORPRATE_DONATIONS), async (querySnapshot) => {
+			// console.log('snapshotListner1 :: querySnapshot :: ', querySnapshot);
 
-				await new Promise((r) => setTimeout(r, 3000));
-				_userCorp = [];
-				_otherCorp = [];
-				await querySnapshot.forEach((doc) => {
-					if (!doc.exists()) {
-						return;
-					}
-					let docData = doc.data();
-					// console.log('snapshotListner1 :: docData :: ', doc.id, $userStore);
+			// await new Promise((r) => setTimeout(r, 3000));
+			_userCorp = [];
+			_otherCorp = [];
+			await querySnapshot.forEach((doc) => {
+				if (!doc.exists()) {
+					return;
+				}
+				let docData = doc.data();
+				// console.log('snapshotListner1 :: docData :: ', doc.id, $userStore);
 
-					if ($userStore.donationsAdded.includes(doc.id)) {
-						_userCorp.push({ ...docData, docId: doc.id, canView: true, hasjoined: false, coll: COLL_CORPRATE_DONATIONS });
+				if ($userStore.donationsAdded.includes(doc.id)) {
+					_userCorp.push({
+						...docData,
+						docId: doc.id,
+						canView: true,
+						hasjoined: false,
+						coll: COLL_CORPRATE_DONATIONS
+					});
+				} else {
+					if ($userStore.activities.includes(doc.id)) {
+						_otherCorp.push({
+							...docData,
+							docId: doc.id,
+							hasJoined: true,
+							canView: false,
+							coll: COLL_CORPRATE_DONATIONS
+						});
 					} else {
-						if ($userStore.activities.includes(doc.id)) {
-							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: true, canView: false, coll: COLL_CORPRATE_DONATIONS });
-						} else {
-							_otherCorp.push({ ...docData, docId: doc.id, hasJoined: false, canView: false, coll: COLL_CORPRATE_DONATIONS });
-						}
+						_otherCorp.push({
+							...docData,
+							docId: doc.id,
+							hasJoined: false,
+							canView: false,
+							coll: COLL_CORPRATE_DONATIONS
+						});
 					}
-				});
-				allOtherDonations = [..._otherNgo, ..._otherCorp];
-				allUserDonations = [..._userNgo, ..._userCorp];
-			}
-		);
+				}
+			});
+			allOtherDonations = [..._otherNgo, ..._otherCorp];
+			allUserDonations = [..._userNgo, ..._userCorp];
+		});
+	};
 
+	$: {
+		console.log('$userStore.donationsAdded :: ', $userStore.donationsAdded);
+		if ($userStore.uid) {
+			const userListner = onSnapshot(doc(db, COLL_USERS, $userStore.uid), (doc) => {
+				console.log('userListner data: ', doc.data());
+				const docData = doc.data();
+				let _data = {
+					authState: true,
+					category: docData?.category,
+					email: docData?.email,
+					name: docData?.name,
+					phone: docData?.phone,
+						uid: doc?.id,
+					activities: docData?.activities,
+					donations: docData?.donations,
+					activitiesAdded: docData?.activitiesAdded,
+					donationsAdded: docData?.donationsAdded
+				};
+				console.log($userStore, _data, areObjectsEqual($userStore, _data));
+
+				if ($userStore.category !== 'user' && !areObjectsEqual($userStore, _data)) {
+					userStore.update((prevState) => ({
+						...prevState,
+						authState: true,
+						category: docData?.category,
+						email: docData?.email,
+						name: docData?.name,
+						phone: docData?.phone,
+					uid: doc?.id,
+						activities: docData?.activities,
+						donations: docData?.donations,
+						activitiesAdded: docData?.activitiesAdded,
+						donationsAdded: docData?.donationsAdded
+					}));
+
+					setTimeout(() => {
+						snapshotListner1();
+						snapshotListner2();
+					}, 500);
+				}
+			});
+		}
 		console.log(_otherNgo, _otherCorp, _userNgo, _userCorp);
 
-		return () => {
-			snapshotListner1();
-			snapshotListner2();
-		};
+		// return () => {
+		// 	snapshotListner1();
+		// 	snapshotListner2();
+		// };
+	}
+
+	onMount(() => {
+		snapshotListner1();
+		snapshotListner2();
 	});
 
 	$: console.log(allOtherDonations);
@@ -164,7 +236,7 @@
 					>
 						<div class="flex-auto p-4">
 							<div class="flex flex-wrap -mx-3">
-								<div class="w-full max-w-full px-3 mb-6 md:w-6/12 md:flex-none xl:mb-0 xl:w-3/12">
+								<div class="w-full max-w-full px-3 md:w-6/12 md:flex-none xl:mb-0 xl:w-3/12">
 									<div
 										class="relative flex flex-col h-full min-w-0 break-words bg-transparent border border-solid shadow-none rounded-2xl border-slate-100 bg-clip-border"
 									>
@@ -181,7 +253,7 @@
 								</div>
 
 								{#each allUserDonations as eachUserDonation, index}
-									<div class="max-w-full px-3 mb-6 md:w-6/12 md:flex-none xl:mb-0 xl:w-3/12">
+									<div class="my-5 max-w-full px-3 md:w-6/12 md:flex-none xl:mb-0 xl:w-3/12">
 										<EachCard
 											counter={index + 1}
 											{updateViewModalState}
@@ -212,7 +284,9 @@
 					<div class="flex-auto p-4">
 						<div class="flex flex-wrap -mx-3">
 							{#each allOtherDonations as eachOtherDonation, index}
-								<div class="w-full max-w-full px-3 mb-6 md:w-6/12 md:flex-none xl:mb-0 xl:w-3/12">
+								<div
+									class="my-5 w-full max-w-full px-3 mb-10 md:w-6/12 md:flex-none xl:mb-0 xl:w-3/12"
+								>
 									<EachCard
 										counter={index + 1}
 										{updateViewModalState}
